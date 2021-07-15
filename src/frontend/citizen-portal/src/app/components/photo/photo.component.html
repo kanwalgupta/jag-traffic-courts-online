@@ -108,11 +108,45 @@
     </ng-template>
   </div>
 
+  <section *ngIf="formInfo">
+    <h2>Is this correct?</h2>
+    <ng-container *ngFor="let info of formInfo; let i = index">
+      <div class="row mt-4">
+        <div class="col-md-3">{{ info.label }}:</div>
+        <div class="col-md-4">
+          <strong>{{ info.data }}</strong>
+        </div>
+        <div class="col-md-5">
+          <button mat-icon-button class="mat-icon-form-data">
+            <mat-icon inline="true"> check_circle</mat-icon>
+          </button>
+
+          <!--
+        <button mat-icon-button>
+          <mat-icon inline="true" class="ml-3 mat-icon"> close</mat-icon>
+        </button>
+        -->
+
+          <button mat-icon-button class="ml-3 mat-icon-form-data">
+            <mat-icon inline="true"> edit</mat-icon>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </section>
+
+  <!--
   <pre>{{ formInfo | json }}</pre>
+  -->
 
   <div class="row mt-4">
     <div class="col-md-5">
-      <button mat-flat-button color="primary" class="large">
+      <button
+        mat-flat-button
+        color="primary"
+        class="large"
+        (click)="onCancel()"
+      >
         <mat-icon inline="true">read_more</mat-icon>
         Attach Photo to Ticket
       </button>

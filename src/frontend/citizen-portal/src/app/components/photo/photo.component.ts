@@ -2,11 +2,14 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import { Router } from '@angular/router';
 import {
   AzureKeyCredential,
   FormPollerLike,
   FormRecognizerClient,
 } from '@azure/ai-form-recognizer';
+import { AppRoutes } from 'app/app.routes';
+import { DisputeService } from 'app/services/dispute.service';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import { Observable, Subject, Subscription } from 'rxjs';
 
@@ -57,7 +60,10 @@ export class PhotoComponent implements OnInit {
   public uploadProgress: number;
   public uploadSub: Subscription;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private disputeService: DisputeService,
+    protected router: Router
+  ) {}
 
   ngOnInit(): void {
     WebcamUtil.getAvailableVideoInputs().then(
@@ -127,7 +133,7 @@ export class PhotoComponent implements OnInit {
   private onFulfilled(): (poller: FormPollerLike) => void {
     return (poller: FormPollerLike) => {
       this.busy = poller.pollUntilDone().then(() => {
-        console.log('result', poller.getResult());
+        // console.log('result', poller.getResult());
         const invoices = poller.getResult();
 
         if (!invoices || invoices.length <= 0) {
@@ -136,7 +142,29 @@ export class PhotoComponent implements OnInit {
 
         const invoice = invoices[0];
         console.log('First invoice:', invoice);
-        this.formInfo = invoice;
+        // this.formInfo = invoice;
+
+        const customerAddressField = invoice.fields['CustomerAddress'];
+        if (customerAddressField.valueType === 'string') {
+          console.log(
+            `  Receipt Type: '${
+              customerAddressField.value || '<missing>'
+            }', with confidence of ${customerAddressField.confidence}`
+          );
+        }
+        const invoiceIdField = invoice.fields['InvoiceId'];
+        if (invoiceIdField.valueType === 'string') {
+          console.log(
+            `  Merchant Name: '${
+              invoiceIdField.value || '<missing>'
+            }', with confidence of ${invoiceIdField.confidence}`
+          );
+        }
+
+        this.formInfo = [
+          { label: 'Invoice ID', data: invoiceIdField.value },
+          { label: 'Customer Address', data: customerAddressField.value },
+        ];
       });
     };
   }
@@ -199,5 +227,17 @@ export class PhotoComponent implements OnInit {
 
   public get nextWebcamObservable(): Observable<boolean | string> {
     return this.nextWebcam.asObservable();
+  }
+
+  public onCancel(): void {
+    const ticket = this.disputeService.ticket;
+    const params = {
+      ticketNumber: ticket.violationTicketNumber,
+      time: ticket.violationTime,
+    };
+
+    this.router.navigate([AppRoutes.disputePath(AppRoutes.SUMMARY)], {
+      queryParams: params,
+    });
   }
 }
