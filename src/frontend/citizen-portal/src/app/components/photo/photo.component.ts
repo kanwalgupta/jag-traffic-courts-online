@@ -2,6 +2,11 @@ import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import {
+  AzureKeyCredential,
+  FormPollerLike,
+  FormRecognizerClient,
+} from '@azure/ai-form-recognizer';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import { Observable, Subject, Subscription } from 'rxjs';
 
@@ -12,6 +17,7 @@ import { Observable, Subject, Subscription } from 'rxjs';
 })
 export class PhotoComponent implements OnInit {
   public busy: Subscription;
+  public formInfo: any;
 
   public photoCaptureType = new FormControl('upload');
 
@@ -75,6 +81,7 @@ export class PhotoComponent implements OnInit {
 
     const reader = new FileReader();
     const file: File = event.target.files[0];
+    console.log('file target', event.target.files[0]);
     this.fileName = file.name;
     reader.readAsDataURL(file);
     console.log('file', file.name, file.lastModified);
@@ -82,10 +89,83 @@ export class PhotoComponent implements OnInit {
     reader.onload = () => {
       this.imageSrc = reader.result as string;
 
+      this.recognizeContent(file);
+
       this.myForm.patchValue({
         fileSource: reader.result,
       });
     };
+  }
+
+  private recognizeContent(imageSource: File): void {
+    const endpoint = 'https://canadacentral.api.cognitive.microsoft.com';
+    const apiKey = '65440468b684497988679b8857f33a36';
+
+    const client = new FormRecognizerClient(
+      endpoint,
+      new AzureKeyCredential(apiKey)
+    );
+
+    // client.beginRecognizeCustomForms('123', imageSource, {
+    //   onProgress: (state) => {
+    //     console.log(`analyzing status: ${state.status}`);
+    //   },
+    // });
+
+    const poller = client.beginRecognizeInvoices(imageSource, {
+      onProgress: (state) => {
+        console.log(`analyzing status: ${state.status}`);
+      },
+    });
+
+    poller.then(this.onFulfilled.bind(this), this.onRejected);
+    // poller.then(this.onFulfilledXXX, this.onRejected);
+  }
+
+  private async onFulfilled(poller: FormPollerLike) {
+    const invoices = await poller.pollUntilDone();
+    console.log('invoices', invoices);
+
+    if (!invoices || invoices.length <= 0) {
+      throw new Error('Expecting at lease one invoice in analysis result');
+    }
+
+    const invoice = invoices[0];
+    console.log('First invoice:', invoice);
+    this.formInfo = invoice;
+  }
+
+  private onFulfilledXXX(poller: FormPollerLike): () => Promise<void> {
+    console.log('onFulfilledXXX', poller);
+    this.formInfo = 'aaaa';
+    poller.pollUntilDone().then((temp: any) => {
+      console.log('pollUntilDone', temp);
+      console.log('result', poller.getResult());
+      // this.formInfo = temp;
+    });
+    return Promise.resolve;
+  }
+
+  // private onRejectedXXX((xx) => {
+  //   console.log('onFulfilled', xx);
+  // }
+
+  // private onFulfilledXXX(poller: FormPollerLike) {
+  //   console.log('onFulfilled', poller);
+
+  //   poller.pollUntilDone().then((temp: any) => {
+  //     console.log('pollUntilDone', temp);
+  //     console.log('result', poller.getResult());
+  //     // this.formInfo = temp; // fails
+  //   });
+  // }
+
+  // private onCallbackExample(poller: FormPollerLike): () => whatever {
+  //   return () => do whatever you want in scope
+  // }
+
+  private onRejected(xx) {
+    console.log('onRejected', xx);
   }
 
   public triggerSnapshot(): void {
@@ -117,6 +197,18 @@ export class PhotoComponent implements OnInit {
   public handleImage(webcamImage: WebcamImage): void {
     console.log('received webcam image', webcamImage);
     this.webcamImage = webcamImage;
+
+    const arr = this.webcamImage.imageAsDataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    const file: File = new File([u8arr], 'invoice', { type: 'image/jpeg' });
+
+    this.recognizeContent(file);
   }
 
   public cameraWasSwitched(deviceId: string): void {
