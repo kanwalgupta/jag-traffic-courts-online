@@ -16,7 +16,8 @@ import { Observable, Subject, Subscription } from 'rxjs';
   styleUrls: ['./photo.component.scss'],
 })
 export class PhotoComponent implements OnInit {
-  public busy: Subscription;
+  // public busy: Subscription;
+  public busy: Promise<any>;
   public formInfo: any;
 
   public photoCaptureType = new FormControl('upload');
@@ -118,54 +119,30 @@ export class PhotoComponent implements OnInit {
       },
     });
 
-    poller.then(this.onFulfilled.bind(this), this.onRejected);
-    // poller.then(this.onFulfilledXXX, this.onRejected);
+    this.busy = poller;
+
+    poller.then(this.onFulfilled(), this.onRejected);
   }
 
-  private async onFulfilled(poller: FormPollerLike) {
-    const invoices = await poller.pollUntilDone();
-    console.log('invoices', invoices);
+  private onFulfilled(): (poller: FormPollerLike) => void {
+    return (poller: FormPollerLike) => {
+      this.busy = poller.pollUntilDone().then(() => {
+        console.log('result', poller.getResult());
+        const invoices = poller.getResult();
 
-    if (!invoices || invoices.length <= 0) {
-      throw new Error('Expecting at lease one invoice in analysis result');
-    }
+        if (!invoices || invoices.length <= 0) {
+          throw new Error('Expecting at least one invoice in analysis result');
+        }
 
-    const invoice = invoices[0];
-    console.log('First invoice:', invoice);
-    this.formInfo = invoice;
+        const invoice = invoices[0];
+        console.log('First invoice:', invoice);
+        this.formInfo = invoice;
+      });
+    };
   }
 
-  private onFulfilledXXX(poller: FormPollerLike): () => Promise<void> {
-    console.log('onFulfilledXXX', poller);
-    this.formInfo = 'aaaa';
-    poller.pollUntilDone().then((temp: any) => {
-      console.log('pollUntilDone', temp);
-      console.log('result', poller.getResult());
-      // this.formInfo = temp;
-    });
-    return Promise.resolve;
-  }
-
-  // private onRejectedXXX((xx) => {
-  //   console.log('onFulfilled', xx);
-  // }
-
-  // private onFulfilledXXX(poller: FormPollerLike) {
-  //   console.log('onFulfilled', poller);
-
-  //   poller.pollUntilDone().then((temp: any) => {
-  //     console.log('pollUntilDone', temp);
-  //     console.log('result', poller.getResult());
-  //     // this.formInfo = temp; // fails
-  //   });
-  // }
-
-  // private onCallbackExample(poller: FormPollerLike): () => whatever {
-  //   return () => do whatever you want in scope
-  // }
-
-  private onRejected(xx) {
-    console.log('onRejected', xx);
+  private onRejected(info) {
+    console.log('onRejected', info);
   }
 
   public triggerSnapshot(): void {
@@ -199,7 +176,7 @@ export class PhotoComponent implements OnInit {
     this.webcamImage = webcamImage;
 
     const arr = this.webcamImage.imageAsDataUrl.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
+    // const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]);
     let n = bstr.length;
     const u8arr = new Uint8Array(n);
