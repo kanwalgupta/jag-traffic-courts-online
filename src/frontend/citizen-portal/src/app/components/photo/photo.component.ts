@@ -1,3 +1,4 @@
+import { formatCurrency } from '@angular/common';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -118,7 +119,7 @@ export class PhotoComponent implements OnInit {
     );
 
     const poller = client.beginRecognizeCustomForms(
-      '05bfaa42-528d-4422-ac73-ec9f09ae92cd',
+      '12a6b5a0-86e9-45ed-abb8-a313f34853bd',
       imageSource,
       {
         onProgress: (state) => {
@@ -156,7 +157,7 @@ export class PhotoComponent implements OnInit {
         if (invoiceIdField.valueType === 'string') {
           console.log(
             `  violation ticket number: '${
-              invoiceIdField.valueData?.text || '<missing>'
+              invoiceIdField.value || '<missing>'
             }', with confidence of ${invoiceIdField.confidence}`
           );
         }
@@ -196,7 +197,7 @@ export class PhotoComponent implements OnInit {
         if (count1TicketAmountField.valueType === 'number') {
           console.log(
             `  count 1 ticket amount: '${
-              count1TicketAmountField.valueData?.text || '<missing>'
+              count1TicketAmountField.value || '<missing>'
             }', with confidence of ${count1TicketAmountField.confidence}`
           );
         }
@@ -220,7 +221,7 @@ export class PhotoComponent implements OnInit {
         if (count2TicketAmountField.valueType === 'number') {
           console.log(
             `  count 2 ticket amount: '${
-              count2TicketAmountField.valueData?.text || '<missing>'
+              count2TicketAmountField.value || '<missing>'
             }', with confidence of ${count2TicketAmountField.confidence}`
           );
         }
@@ -244,7 +245,7 @@ export class PhotoComponent implements OnInit {
         if (count3TicketAmountField.valueType === 'number') {
           console.log(
             `  count 3 ticket amount: '${
-              count3TicketAmountField.valueData?.text || '<missing>'
+              count3TicketAmountField.value || '<missing>'
             }', with confidence of ${count3TicketAmountField.confidence}`
           );
         }
@@ -252,7 +253,7 @@ export class PhotoComponent implements OnInit {
         this.formInfo = [
           {
             label: 'Ticket Number',
-            data: invoiceIdField.valueData?.text,
+            data: invoiceIdField.value,
           },
           { label: 'Surname', data: surnameField.valueData?.text },
           { label: 'Given Name', data: givenNameField.valueData?.text },
@@ -262,11 +263,17 @@ export class PhotoComponent implements OnInit {
           },
           {
             label: 'Count 1 Section',
-            data: count1SectionField.valueData?.text,
+            data: count1SectionField.valueData?.text?.replace(/\s/g, ''),
           },
           {
             label: 'Count 1 Ticket Amount',
-            data: count1TicketAmountField.valueData?.text,
+            data: count1TicketAmountField.value
+              ? formatCurrency(
+                  Number(count1TicketAmountField.value),
+                  'en-US',
+                  '$'
+                )
+              : '',
           },
           {
             label: 'Count 2 Description',
@@ -274,11 +281,17 @@ export class PhotoComponent implements OnInit {
           },
           {
             label: 'Count 2 Section',
-            data: count2SectionField.valueData?.text,
+            data: count2SectionField.valueData?.text?.replace(/\s/g, ''),
           },
           {
             label: 'Count 2 Ticket Amount',
-            data: count2TicketAmountField.valueData?.text,
+            data: count2TicketAmountField.value
+              ? formatCurrency(
+                  Number(count2TicketAmountField.value),
+                  'en-US',
+                  '$'
+                )
+              : '',
           },
           {
             label: 'Count 3 Description',
@@ -286,11 +299,17 @@ export class PhotoComponent implements OnInit {
           },
           {
             label: 'Count 3 Section',
-            data: count3SectionField.valueData?.text,
+            data: count3SectionField.valueData?.text?.replace(/\s/g, ''),
           },
           {
             label: 'Count 3 Ticket Amount',
-            data: count3TicketAmountField.valueData?.text,
+            data: count3TicketAmountField.value
+              ? formatCurrency(
+                  Number(count3TicketAmountField.value),
+                  'en-US',
+                  '$'
+                )
+              : '',
           },
         ];
       });
