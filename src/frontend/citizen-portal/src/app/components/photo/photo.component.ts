@@ -23,9 +23,11 @@ export class PhotoComponent implements OnInit {
   public busy: Promise<any>;
   public formInfo: any;
 
+  public processImageFromCam = true;
+
   public photoCaptureType = new FormControl('upload');
 
-  public showWebcam = false;
+  public showWebcam = true; //false;
   // public allowCameraSwitch = true;
   public multipleWebcamsAvailable = false;
   public deviceId: string;
@@ -96,6 +98,8 @@ export class PhotoComponent implements OnInit {
     reader.onload = () => {
       this.imageSrc = reader.result as string;
 
+      this.formInfo = null;
+      this.processImageFromCam = false;
       this.recognizeContent(file);
 
       this.myForm.patchValue({
@@ -113,17 +117,21 @@ export class PhotoComponent implements OnInit {
       new AzureKeyCredential(apiKey)
     );
 
-    // client.beginRecognizeCustomForms('123', imageSource, {
+    const poller = client.beginRecognizeCustomForms(
+      '05bfaa42-528d-4422-ac73-ec9f09ae92cd',
+      imageSource,
+      {
+        onProgress: (state) => {
+          console.log(`analyzing status: ${state.status}`);
+        },
+      }
+    );
+
+    // const poller = client.beginRecognizeInvoices(imageSource, {
     //   onProgress: (state) => {
     //     console.log(`analyzing status: ${state.status}`);
     //   },
     // });
-
-    const poller = client.beginRecognizeInvoices(imageSource, {
-      onProgress: (state) => {
-        console.log(`analyzing status: ${state.status}`);
-      },
-    });
 
     this.busy = poller;
 
@@ -144,26 +152,146 @@ export class PhotoComponent implements OnInit {
         console.log('First invoice:', invoice);
         // this.formInfo = invoice;
 
-        const customerAddressField = invoice.fields['CustomerAddress'];
-        if (customerAddressField.valueType === 'string') {
-          console.log(
-            `  Receipt Type: '${
-              customerAddressField.value || '<missing>'
-            }', with confidence of ${customerAddressField.confidence}`
-          );
-        }
-        const invoiceIdField = invoice.fields['InvoiceId'];
+        const invoiceIdField = invoice.fields['violation ticket number'];
         if (invoiceIdField.valueType === 'string') {
           console.log(
-            `  Merchant Name: '${
-              invoiceIdField.value || '<missing>'
+            `  violation ticket number: '${
+              invoiceIdField.valueData?.text || '<missing>'
             }', with confidence of ${invoiceIdField.confidence}`
+          );
+        }
+        const surnameField = invoice.fields['surname'];
+        if (surnameField.valueType === 'string') {
+          console.log(
+            `  surname: '${
+              surnameField.valueData?.text || '<missing>'
+            }', with confidence of ${surnameField.confidence}`
+          );
+        }
+        const givenNameField = invoice.fields['given name'];
+        if (givenNameField.valueType === 'string') {
+          console.log(
+            `  given name: '${
+              givenNameField.valueData?.text || '<missing>'
+            }', with confidence of ${givenNameField.confidence}`
+          );
+        }
+        const count1DescField = invoice.fields['count 1 description'];
+        if (count1DescField.valueType === 'string') {
+          console.log(
+            `  count 1 description: '${
+              count1DescField.valueData?.text || '<missing>'
+            }', with confidence of ${count1DescField.confidence}`
+          );
+        }
+        const count1SectionField = invoice.fields['count 1 section'];
+        if (count1SectionField.valueType === 'string') {
+          console.log(
+            `  count 1 section: '${
+              count1SectionField.valueData?.text || '<missing>'
+            }', with confidence of ${count1SectionField.confidence}`
+          );
+        }
+        const count1TicketAmountField = invoice.fields['count 1 ticket amount'];
+        if (count1TicketAmountField.valueType === 'number') {
+          console.log(
+            `  count 1 ticket amount: '${
+              count1TicketAmountField.valueData?.text || '<missing>'
+            }', with confidence of ${count1TicketAmountField.confidence}`
+          );
+        }
+        const count2DescField = invoice.fields['count 2 description'];
+        if (count2DescField.valueType === 'string') {
+          console.log(
+            `  count 2 description: '${
+              count2DescField.valueData?.text || '<missing>'
+            }', with confidence of ${count2DescField.confidence}`
+          );
+        }
+        const count2SectionField = invoice.fields['count 2 section'];
+        if (count2SectionField.valueType === 'string') {
+          console.log(
+            `  count 2 section: '${
+              count2SectionField.valueData?.text || '<missing>'
+            }', with confidence of ${count2SectionField.confidence}`
+          );
+        }
+        const count2TicketAmountField = invoice.fields['count 2 ticket amount'];
+        if (count2TicketAmountField.valueType === 'number') {
+          console.log(
+            `  count 2 ticket amount: '${
+              count2TicketAmountField.valueData?.text || '<missing>'
+            }', with confidence of ${count2TicketAmountField.confidence}`
+          );
+        }
+        const count3DescField = invoice.fields['count 3 description'];
+        if (count3DescField.valueType === 'string') {
+          console.log(
+            `  count 3 description: '${
+              count3DescField.valueData?.text || '<missing>'
+            }', with confidence of ${count3DescField.confidence}`
+          );
+        }
+        const count3SectionField = invoice.fields['count 3 section'];
+        if (count3SectionField.valueType === 'string') {
+          console.log(
+            `  count 3 section: '${
+              count3SectionField.valueData?.text || '<missing>'
+            }', with confidence of ${count3SectionField.confidence}`
+          );
+        }
+        const count3TicketAmountField = invoice.fields['count 3 ticket amount'];
+        if (count3TicketAmountField.valueType === 'number') {
+          console.log(
+            `  count 3 ticket amount: '${
+              count3TicketAmountField.valueData?.text || '<missing>'
+            }', with confidence of ${count3TicketAmountField.confidence}`
           );
         }
 
         this.formInfo = [
-          { label: 'Invoice ID', data: invoiceIdField.value },
-          { label: 'Customer Address', data: customerAddressField.value },
+          {
+            label: 'Ticket Number',
+            data: invoiceIdField.valueData?.text,
+          },
+          { label: 'Surname', data: surnameField.valueData?.text },
+          { label: 'Given Name', data: givenNameField.valueData?.text },
+          {
+            label: 'Count 1 Description',
+            data: count1DescField.valueData?.text,
+          },
+          {
+            label: 'Count 1 Section',
+            data: count1SectionField.valueData?.text,
+          },
+          {
+            label: 'Count 1 Ticket Amount',
+            data: count1TicketAmountField.valueData?.text,
+          },
+          {
+            label: 'Count 2 Description',
+            data: count2DescField.valueData?.text,
+          },
+          {
+            label: 'Count 2 Section',
+            data: count2SectionField.valueData?.text,
+          },
+          {
+            label: 'Count 2 Ticket Amount',
+            data: count2TicketAmountField.valueData?.text,
+          },
+          {
+            label: 'Count 3 Description',
+            data: count3DescField.valueData?.text,
+          },
+          {
+            label: 'Count 3 Section',
+            data: count3SectionField.valueData?.text,
+          },
+          {
+            label: 'Count 3 Ticket Amount',
+            data: count3TicketAmountField.valueData?.text,
+          },
         ];
       });
     };
@@ -178,8 +306,8 @@ export class PhotoComponent implements OnInit {
   }
 
   public toggleWebcam($event: MatButtonToggleChange): void {
-    console.log('toggleWebcam', $event);
-    this.showWebcam = $event.value === 'take'; // $event.checked; //!this.showWebcam;
+    // console.log('toggleWebcam', $event);
+    // this.showWebcam = $event.value === 'take'; // $event.checked; //!this.showWebcam;
   }
 
   public handleInitError(error: WebcamInitError): void {
@@ -213,6 +341,8 @@ export class PhotoComponent implements OnInit {
     }
     const file: File = new File([u8arr], 'invoice', { type: 'image/jpeg' });
 
+    this.formInfo = null;
+    this.processImageFromCam = true;
     this.recognizeContent(file);
   }
 

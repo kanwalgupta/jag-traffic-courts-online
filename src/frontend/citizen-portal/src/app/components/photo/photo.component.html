@@ -4,6 +4,7 @@
   </app-page-header>
 
   <div>
+    <!--
     <mat-button-toggle-group
       (change)="toggleWebcam($event)"
       [formControl]="photoCaptureType"
@@ -19,20 +20,51 @@
         Take Photo
       </mat-button-toggle>
     </mat-button-toggle-group>
+-->
 
-    <div *ngIf="showWebcam; else noShowWebcamImage">
+    <div>
+      <!-- *ngIf="showWebcam; else noShowWebcamImage">-->
       <div *ngIf="webcamImage; else noWebcamImage">
-        <img [src]="webcamImage.imageAsDataUrl" /><br />
+        <div class="row">
+          <div class="col-md-6">
+            <img
+              [src]="webcamImage.imageAsDataUrl"
+              style="max-height: 700px; max-width: 500px"
+            /><br />
 
-        <button
-          type="button"
-          mat-flat-button
-          color="primary"
-          class="mt-2 mb-4"
-          (click)="webcamImage = null"
-        >
-          Try Again
-        </button>
+            <button
+              type="button"
+              mat-flat-button
+              color="primary"
+              class="mt-2 mb-4"
+              (click)="webcamImage = null"
+            >
+              Try Again
+            </button>
+          </div>
+          <div
+            class="col-md-6 p-0"
+            *ngIf="formInfo && processImageFromCam === true"
+          >
+            <h2>Is this correct?</h2>
+            <ng-container *ngFor="let info of formInfo; let i = index">
+              <div class="row mt-4">
+                <div class="col-md-4">{{ info.label }}:</div>
+                <div class="col-md-5">
+                  <strong>{{ info.data }}</strong>
+                </div>
+                <div class="col-md-3">
+                  <button mat-icon-button class="mat-icon-form-data">
+                    <mat-icon inline="true"> check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button class="ml-3 mat-icon-form-data">
+                    <mat-icon inline="true"> edit</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
       </div>
 
       <ng-template #noWebcamImage>
@@ -79,7 +111,8 @@
       </ul>
     </div>
 
-    <ng-template #noShowWebcamImage>
+    <hr style="border: 1px solid black" />
+    <div class="mt-4">
       <div>
         <button
           type="button"
@@ -97,17 +130,56 @@
           type="file"
           id="file"
         />
-
+        <!--
         <img
           [src]="imageSrc"
           *ngIf="imageSrc"
           style="max-height: 500px; max-width: 500px"
           class="mb-4"
         />
+        -->
       </div>
-    </ng-template>
+    </div>
   </div>
 
+  <div class="row">
+    <div class="col-md-6">
+      <img
+        [src]="imageSrc"
+        *ngIf="imageSrc"
+        style="max-height: 900px; max-width: 700px"
+        class="mb-4"
+      />
+    </div>
+    <div class="col-md-6 p-0" *ngIf="formInfo && processImageFromCam === false">
+      <h2>Is this correct?</h2>
+      <ng-container *ngFor="let info of formInfo; let i = index">
+        <div class="row mt-4">
+          <div class="col-md-4">{{ info.label }}:</div>
+          <div class="col-md-5">
+            <strong>{{ info.data }}</strong>
+          </div>
+          <div class="col-md-3">
+            <button mat-icon-button class="mat-icon-form-data">
+              <mat-icon inline="true"> check_circle</mat-icon>
+            </button>
+
+            <!--
+          <button mat-icon-button>
+            <mat-icon inline="true" class="ml-3 mat-icon"> close</mat-icon>
+          </button>
+          -->
+
+            <button mat-icon-button class="ml-3 mat-icon-form-data">
+              <mat-icon inline="true"> edit</mat-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!--
   <section *ngIf="formInfo">
     <h2>Is this correct?</h2>
     <ng-container *ngFor="let info of formInfo; let i = index">
@@ -120,13 +192,6 @@
           <button mat-icon-button class="mat-icon-form-data">
             <mat-icon inline="true"> check_circle</mat-icon>
           </button>
-
-          <!--
-        <button mat-icon-button>
-          <mat-icon inline="true" class="ml-3 mat-icon"> close</mat-icon>
-        </button>
-        -->
-
           <button mat-icon-button class="ml-3 mat-icon-form-data">
             <mat-icon inline="true"> edit</mat-icon>
           </button>
@@ -134,17 +199,20 @@
       </div>
     </ng-container>
   </section>
+-->
 
   <!--
   <pre>{{ formInfo | json }}</pre>
   -->
 
+  <hr style="border: 1px solid black" />
   <div class="row mt-4">
     <div class="col-md-5">
       <button
         mat-flat-button
         color="primary"
         class="large"
+        routerLink="/dispute/find"
         (click)="onCancel()"
       >
         <mat-icon inline="true">read_more</mat-icon>
