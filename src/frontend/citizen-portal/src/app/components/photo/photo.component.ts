@@ -119,7 +119,7 @@ export class PhotoComponent implements OnInit {
     );
 
     const poller = client.beginRecognizeCustomForms(
-      '12a6b5a0-86e9-45ed-abb8-a313f34853bd',
+      '8b16e3eb-b797-4e1c-a2f6-5891105222dc',
       imageSource,
       {
         onProgress: (state) => {
