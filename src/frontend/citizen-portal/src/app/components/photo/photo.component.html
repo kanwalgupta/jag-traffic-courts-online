@@ -1,6 +1,6 @@
 <app-page [busy]="busy">
   <app-page-header>
-    <ng-container header>Attach Photo of Ticket</ng-container>
+    <ng-container header>Upload Ticket Image</ng-container>
   </app-page-header>
 
   <div>
@@ -22,8 +22,9 @@
     </mat-button-toggle-group>
 -->
 
+    <!-- *ngIf="showWebcam; else noShowWebcamImage">-->
+    <!--
     <div>
-      <!-- *ngIf="showWebcam; else noShowWebcamImage">-->
       <div *ngIf="webcamImage; else noWebcamImage">
         <div class="row">
           <div class="col-md-6">
@@ -110,8 +111,8 @@
         <li>{{ error | json }}</li>
       </ul>
     </div>
-
     <hr style="border: 1px solid black" />
+-->
     <div class="mt-4">
       <div>
         <button
@@ -203,7 +204,6 @@
 
   <!--
   <pre>{{ formInfo | json }}</pre>
-  -->
 
   <hr style="border: 1px solid black" />
   <div class="row mt-4">
@@ -220,4 +220,5 @@
       </button>
     </div>
   </div>
+  -->
 </app-page>
