@@ -14,10 +14,16 @@ services:
       SPLUNK__URL: ${SPLUNK_COLLECTOR_URL}
       SPLUNK__TOKEN: ${SPLUNK_HEC_TOKEN}
       TICKETSEARCHAPI__BASEURL: http://ticket-search:8080/
+      RABBITMQ__HOST: rabbitmq
+      RABBITMQ__PORT: 5672
+      RABBITMQ__USERNAME: guest
+      RABBITMQ__PASSWORD: guest
     ports:
       - "5000:8080"
     restart: always
-    depends_on: [splunk, rabbitmq]
+    depends_on: [splunk, rabbitmq, ticket-search]
+    networks:
+      - traffic-court-net
 
   ticket-search:
     container_name: ticket-search
@@ -36,6 +42,8 @@ services:
       - "5100:8080"
     restart: always
     depends_on: [splunk]
+    networks:
+      - traffic-court-net
 
   # #############################################################################################
   # ###                                 TrafficCourt FRONTEND                                 ###
@@ -127,12 +135,14 @@ services:
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
-      - 5671:5672
+      - 5672:5672
       - 15671:15672
     volumes:
       - data-rabbit:/var/lib/rabbitmq/mnesia/rabbit@app-rabbitmq:cached
     restart: always
-      
+    networks:
+      - traffic-court-net
+
   #############################################################################################
   ###                           REDIS & REDIS COMMANDER                                     ###
   #############################################################################################
@@ -160,11 +170,10 @@ services:
     environment:
       - REDIS_HOST=${REDIS__HOST}
       - REDIS_PASSWORD="${REDIS__PASSWORD}"
-  
+
 networks:
-  default:
+  traffic-court-net:
     driver: "bridge"
-    name: traffic-court-net
 
 volumes:
   data-rabbit:
